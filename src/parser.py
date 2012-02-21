@@ -47,10 +47,28 @@ def handle_data(line, d, t):
         for idx, col in enumerate(data_cols):
             if(line[col] != ''):
                 complex_data = line[col:(col+len(complex_keys))]
+                for i,ld in enumerate(complex_data):
+                    complex_data[i] = convert_type(ld)
                 d[idx][t][line[0]].append(dict(zip(complex_keys, complex_data)))
 
 handle_data.complex_key_map = {}
-"""The static key map for storing complex key headers"""
+"""The static key map foex key headers"""
+
+def convert_type(data):
+    """
+    Convert string to proper number if appropriate
+    """
+    try:
+        v = int(data)
+        return v
+    except ValueError:
+        pass
+    try:
+        v = float(data)
+        return v
+    except ValueError:
+        return data
+
 
 def set_simple_key(line):
     """
