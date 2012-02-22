@@ -17,7 +17,7 @@ in_complex = False
 def handle_data(line, d, t):
     """
     Process a line of data from a specially formatted CSV file.
-    
+
     If the first entry in the line matches the data_col then enter
     complex mode to read that line as new column headers. Otherwise
     set first entry as a variable name with data as the data_cols.
@@ -36,7 +36,7 @@ def handle_data(line, d, t):
         for idx, col in enumerate(data_cols):
             if(line[col] != ''):
                 if(line[col].lower() != key):
-                    d[idx][t][key] = line[col]
+                    d[idx][t][key] = convert_type(line[col])
                 else:
                     handle_data.complex_key_map[line[0]] = set_complex_keys(line, col)
                     for i in range(len(data_cols)):
@@ -59,11 +59,6 @@ def convert_type(data):
     Convert string to proper number if appropriate
     """
     try:
-        v = int(data)
-        return v
-    except ValueError:
-        pass
-    try:
         v = float(data)
         return v
     except ValueError:
@@ -73,7 +68,7 @@ def convert_type(data):
 def set_simple_key(line):
     """
     Set the key for a given data line
-    
+
      @type  line: list
      @param line: A line of simple (flat) data.
      @rtype: string
@@ -123,7 +118,10 @@ def main():
             if(in_complex):
                 in_complex = False
     print 'Process completed'
-    print json.dumps(experiments[0], indent=4)
+    print '#########'
+    print json.dumps(experiments[0])
+    print '#########'
+    print json.dumps(experiments[1])
     """Only dumping JSON temporarily as an exmaple dataset"""
 
 if __name__ == '__main__':
