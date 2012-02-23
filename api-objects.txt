@@ -1,0 +1,10 @@
+parser	parser-module.html
+parser.main	parser-module.html#main
+parser.current_mode	parser-module.html#current_mode
+parser.convert_type	parser-module.html#convert_type
+parser.data_cols	parser-module.html#data_cols
+parser.set_complex_keys	parser-module.html#set_complex_keys
+parser.__package__	parser-module.html#__package__
+parser.set_simple_key	parser-module.html#set_simple_key
+parser.handle_data	parser-module.html#handle_data
+parser.in_complex	parser-module.html#in_complex
