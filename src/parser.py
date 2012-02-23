@@ -10,8 +10,9 @@ import json
 
 ## GLOBALS
 data_cols = [5,16]
-current_mode = ["", ""]
 """A list of columns in the CSV where data is defined"""
+current_mode = ["", ""]
+"""A list containing current mode information"""
 in_complex = False
 """Complex mode binary switch"""
 
