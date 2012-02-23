@@ -10,7 +10,7 @@ import json
 
 ## GLOBALS
 data_cols = [5,16]
-current_mode = ""
+current_mode = ["", ""]
 """A list of columns in the CSV where data is defined"""
 in_complex = False
 """Complex mode binary switch"""
@@ -40,17 +40,17 @@ def handle_data(line, d, t):
                 if(line[col].lower() != key):
                     d[idx][t][key] = convert_type(line[col])
                 else:
-                    handle_data.complex_key_map[current_mode] = set_complex_keys(line, col)
+                    handle_data.complex_key_map[current_mode[0]] = set_complex_keys(line, col)
                     for i in range(len(data_cols)):
-                        d[i][t][current_mode] = []
+                        d[i][t][current_mode[0]] = []
                     in_complex = True
     else:
-        complex_keys = handle_data.complex_key_map[current_mode]
+        complex_keys = handle_data.complex_key_map[current_mode[0]]
         for idx, col in enumerate(data_cols):
             complex_data = line[col:(col+len(complex_keys))]
             for i,ld in enumerate(complex_data):
                 complex_data[i] = convert_type(ld)
-            d[idx][t][current_mode].append(dict(zip(complex_keys, complex_data)))
+            d[idx][t][current_mode[0]].append(dict(zip(complex_keys, complex_data)))
 
 handle_data.complex_key_map = {}
 """The static key map foex key headers"""
@@ -75,7 +75,7 @@ def set_simple_key(line):
      @rtype: string
      @return: The key name extracted from the data
     """
-    return line[1].lower();
+    return line[1].lower()
 
 def set_complex_keys(line, offset):
     """
@@ -89,7 +89,7 @@ def set_complex_keys(line, offset):
     @return: The compelx keys extracted from the data
     """
     keys = []
-    for idx, data in enumerate(line):
+    for idx,data in enumerate(line):
         if(idx >= offset):
             if(data != ""):
                 keys.append(data.lower())
@@ -97,7 +97,7 @@ def set_complex_keys(line, offset):
                 return keys
 def main():
     """
-    Main control loop of the parser. Maintains state with current_module variable.
+    Main control loop of the parser. Maintains state with current_mode variable.
     """
     global in_complex
     global current_mode
@@ -106,28 +106,32 @@ def main():
     exp2 = {'meta': {}, 'management': {}, 'observed': {}, 'weather': {}, 'soil':{}}
     experiments = [exp1,exp2]
     for row in reader:
+        run = True
         if(row[0] == 'Metadata'):
-            handle_data(row, experiments, 'meta')
-            current_mode = "meta"
+            current_mode[0] = row[0]
+            current_mode[1] = 'meta'
         elif(row[0] == 'CropMgmt'):
-            handle_data(row, experiments, 'management')
-            current_mode="management"
+            current_mode[0] = row[0]
+            current_mode[1] = 'management'
         elif(row[0] == 'Observed'):
-            handle_data(row, experiments, 'observed')
-            current_mode="observed"
+            current_mode[0] = row[0]
+            current_mode[1]="observed"
         elif(row[0].startswith('Weather')):
-            handle_data(row, experiments, 'weather')
-            current_mode="weather"
+            current_mode[0] = row[0]
+            current_mode[1]="weather"
         elif(row[0].startswith('Soil')):
-            handle_data(row, experiments, 'soil')
-            current_mode="soil"
+            current_mode[0] = row[0]
+            current_mode[1]="soil"
         else:
             if(in_complex):
                 print(row[data_cols[0]])
-                if(row[data_cols[0]] ==     ""):
+                if(row[data_cols[0]] == ""):
+                    run = False
                     in_complex = False
-                else:
-                    handle_data(row, experiments, current_mode)
+            else:
+                run = False
+        if(run):
+            handle_data(row, experiments, current_mode[1])
     print 'Process completed'
     print '#########'
     print json.dumps(experiments[0])
