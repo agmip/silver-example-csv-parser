@@ -10,6 +10,7 @@ import json
 
 ## GLOBALS
 data_cols = [5,16]
+current_mode = ""
 """A list of columns in the CSV where data is defined"""
 in_complex = False
 """Complex mode binary switch"""
@@ -30,6 +31,7 @@ def handle_data(line, d, t):
     @param    t: The top level key under L{d}
     """
     global in_complex
+    global current_mode
     if(not in_complex):
         key = set_simple_key(line)
         complex_keys = []
@@ -38,18 +40,17 @@ def handle_data(line, d, t):
                 if(line[col].lower() != key):
                     d[idx][t][key] = convert_type(line[col])
                 else:
-                    handle_data.complex_key_map[line[0]] = set_complex_keys(line, col)
+                    handle_data.complex_key_map[current_mode] = set_complex_keys(line, col)
                     for i in range(len(data_cols)):
-                        d[i][t][line[0]] = []
+                        d[i][t][current_mode] = []
                     in_complex = True
     else:
-        complex_keys = handle_data.complex_key_map[line[0]]
+        complex_keys = handle_data.complex_key_map[current_mode]
         for idx, col in enumerate(data_cols):
-            if(line[col] != ''):
-                complex_data = line[col:(col+len(complex_keys))]
-                for i,ld in enumerate(complex_data):
-                    complex_data[i] = convert_type(ld)
-                d[idx][t][line[0]].append(dict(zip(complex_keys, complex_data)))
+            complex_data = line[col:(col+len(complex_keys))]
+            for i,ld in enumerate(complex_data):
+                complex_data[i] = convert_type(ld)
+            d[idx][t][current_mode].append(dict(zip(complex_keys, complex_data)))
 
 handle_data.complex_key_map = {}
 """The static key map foex key headers"""
@@ -99,6 +100,7 @@ def main():
     Main control loop of the parser. Maintains state with current_module variable.
     """
     global in_complex
+    global current_mode
     reader = csv.reader(open('silver_sample.csv', 'rU'))
     exp1 = {'meta': {}, 'management': {}, 'observed': {}, 'weather': {}, 'soil':{}}
     exp2 = {'meta': {}, 'management': {}, 'observed': {}, 'weather': {}, 'soil':{}}
@@ -106,17 +108,26 @@ def main():
     for row in reader:
         if(row[0] == 'Metadata'):
             handle_data(row, experiments, 'meta')
+            current_mode = "meta"
         elif(row[0] == 'CropMgmt'):
             handle_data(row, experiments, 'management')
+            current_mode="management"
         elif(row[0] == 'Observed'):
             handle_data(row, experiments, 'observed')
+            current_mode="observed"
         elif(row[0].startswith('Weather')):
             handle_data(row, experiments, 'weather')
+            current_mode="weather"
         elif(row[0].startswith('Soil')):
             handle_data(row, experiments, 'soil')
+            current_mode="soil"
         else:
             if(in_complex):
-                in_complex = False
+                print(row[data_cols[0]])
+                if(row[data_cols[0]] ==     ""):
+                    in_complex = False
+                else:
+                    handle_data(row, experiments, current_mode)
     print 'Process completed'
     print '#########'
     print json.dumps(experiments[0])
